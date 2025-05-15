@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>MindWander</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        width: 320px;
+        padding: 15px;
+        margin: 0;
+        color: #333;
+      }
+      h1 {
+        font-size: 18px;
+        margin: 0 0 15px 0;
+        color: #4a90e2;
+      }
+      .description {
+        font-size: 14px;
+        line-height: 1.5;
+        margin-bottom: 15px;
+      }
+      .suggestions {
+        margin-top: 15px;
+      }
+      .suggestion {
+        background: #f5f5f5;
+        border-radius: 6px;
+        padding: 10px;
+        margin-bottom: 10px;
+      }
+      .suggestion h3 {
+        font-size: 14px;
+        margin: 0 0 5px 0;
+        color: #4a90e2;
+      }
+      .suggestion p {
+        font-size: 12px;
+        margin: 0 0 5px 0;
+        color: #666;
+      }
+      .suggestion a {
+        color: #4a90e2;
+        text-decoration: none;
+        font-size: 12px;
+      }
+      .suggestion a:hover {
+        text-decoration: underline;
+      }
+      .status {
+        font-size: 12px;
+        color: #666;
+        font-style: italic;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>MindWander</h1>
+    <p class="description">
+      Wtyczka analizuje przeglądane strony i sugeruje interesujące, powiązane
+      treści, które mogą poszerzyć Twoje horyzonty.
+    </p>
+    <div class="suggestions">
+      <h2 style="font-size: 16px; margin: 0 0 10px 0">Ostatnie sugestie</h2>
+      <div id="suggestions-list">
+        <!-- Sugestie będą dodawane dynamicznie przez JavaScript -->
+      </div>
+      <p class="status">Sugestie pojawią się podczas przeglądania stron.</p>
+    </div>
+    <script src="popup.js"></script>
+  </body>
+</html>
