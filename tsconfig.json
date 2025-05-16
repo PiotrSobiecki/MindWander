@@ -12,6 +12,6 @@
     "lib": ["es2020", "dom"],
     "types": ["chrome"]
   },
-  "include": ["src/**/*.ts", "src/config.ts_backup"],
+  "include": ["src/**/*.ts", "src/config.ts"],
   "exclude": ["node_modules"]
 }
