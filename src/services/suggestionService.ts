@@ -67,7 +67,7 @@ Zwróć wynik jako obiekt JSON:
         },
       ],
       temperature: 0.8,
-      max_tokens: 1000,
+      max_tokens: 400,
     }),
   });
 
