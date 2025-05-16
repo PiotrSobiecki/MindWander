@@ -339,3 +339,21 @@ document.addEventListener(
   },
   true
 );
+
+// Nasłuchiwanie na wiadomości o zmianie stanu wtyczki
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === "extensionStateChanged") {
+    if (!request.isEnabled) {
+      // Jeśli wtyczka została wyłączona, usuń wszystkie sugestie
+      const suggestionElement = document.getElementById(
+        "serendipity-suggestion"
+      );
+      if (suggestionElement) {
+        suggestionElement.remove();
+      }
+    } else {
+      // Jeśli wtyczka została włączona, rozpocznij analizę
+      analyzePageWithDelay();
+    }
+  }
+});

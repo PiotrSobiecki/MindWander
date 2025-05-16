@@ -20,8 +20,8 @@ function formatDate(timestamp: number): string {
   });
 }
 
-// Funkcja do wyświetlania do 5 ostatnich sugestii w popup (bez nawigacji)
-function displaySuggestions(suggestions: Suggestion[]) {
+// Funkcja do renderowania sugestii
+function renderSuggestions(suggestions: Suggestion[]) {
   const suggestionsList = document.getElementById("suggestions-list");
   if (!suggestionsList) return;
 
@@ -31,34 +31,71 @@ function displaySuggestions(suggestions: Suggestion[]) {
     return;
   }
 
-  // Wyświetl do 5 ostatnich sugestii
   suggestionsList.innerHTML = suggestions
-    .slice(0, 5)
     .map(
       (suggestion) => `
     <div class="suggestion">
       <h3>${suggestion.title}</h3>
       <p>${suggestion.description}</p>
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 5px;">
-        <a href="${
-          suggestion.url
-        }" target="_blank" style="color: #4A90E2; text-decoration: none; font-size: 12px;">Przeczytaj więcej →</a>
-        ${
-          suggestion.timestamp
-            ? `<span style=\"font-size: 11px; color: #999;\">${formatDate(
-                suggestion.timestamp
-              )}</span>`
-            : ""
-        }
-      </div>
+      <a href="${suggestion.url}" target="_blank">Przeczytaj więcej →</a>
+      ${
+        suggestion.timestamp
+          ? `<div class="date-right">${formatDate(suggestion.timestamp)}</div>`
+          : ""
+      }
     </div>
   `
     )
     .join("");
 }
 
-// Pobierz ostatnie sugestie z chrome.storage
-chrome.storage.local.get(["recentSuggestions"], (result) => {
+// Funkcja do aktualizacji stanu przełącznika
+function updateToggleState(isEnabled: boolean) {
+  const toggle = document.getElementById(
+    "extension-toggle"
+  ) as HTMLInputElement;
+  if (toggle) {
+    toggle.checked = isEnabled;
+  }
+}
+
+// Funkcja do zapisywania stanu wtyczki
+async function saveExtensionState(isEnabled: boolean) {
+  await chrome.storage.local.set({ isEnabled });
+}
+
+// Funkcja do pobierania stanu wtyczki
+async function getExtensionState(): Promise<boolean> {
+  const result = await chrome.storage.local.get(["isEnabled"]);
+  return result.isEnabled !== undefined ? result.isEnabled : true; // domyślnie włączona
+}
+
+// Inicjalizacja popup
+document.addEventListener("DOMContentLoaded", async () => {
+  // Pobierz i wyświetl sugestie
+  const result = await chrome.storage.local.get(["recentSuggestions"]);
   const suggestions: Suggestion[] = result.recentSuggestions || [];
-  displaySuggestions(suggestions);
+  renderSuggestions(suggestions);
+
+  // Inicjalizuj przełącznik
+  const toggle = document.getElementById(
+    "extension-toggle"
+  ) as HTMLInputElement;
+  if (toggle) {
+    // Pobierz aktualny stan
+    const isEnabled = await getExtensionState();
+    updateToggleState(isEnabled);
+
+    // Dodaj obsługę zmiany stanu
+    toggle.addEventListener("change", async (e) => {
+      const target = e.target as HTMLInputElement;
+      await saveExtensionState(target.checked);
+
+      // Wyślij wiadomość do background script
+      chrome.runtime.sendMessage({
+        action: "toggleExtension",
+        isEnabled: target.checked,
+      });
+    });
+  }
 });

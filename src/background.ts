@@ -156,29 +156,63 @@ chrome.notifications.onButtonClicked.addListener(
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   console.log("Wiadomość otrzymana w background.ts:", request);
 
-  if (request.action === "processPageContent") {
-    const pageData: PageData = request.data;
-    console.log("Przetwarzanie danych strony:", {
-      title: pageData.title,
-      contentLength: pageData.content.length,
-      keywords: pageData.keywords,
-    });
-
-    // Pobierz sugestie od OpenAI
-    getSuggestions(pageData.keywords, pageData.content)
-      .then((suggestions: Suggestion[]) => {
-        if (suggestions.length > 0) {
-          // Zapisz pierwszą sugestię
-          saveSuggestion(suggestions[0]);
-          sendResponse({ suggestion: suggestions[0] });
-        } else {
-          sendResponse({ status: "Brak sugestii" });
-        }
-      })
-      .catch((error: any) => {
-        console.error("Błąd podczas pobierania sugestii:", error);
-        sendResponse({ status: "Błąd podczas pobierania sugestii" });
+  if (request.action === "toggleExtension") {
+    // Aktualizuj stan wtyczki
+    chrome.storage.local.set({ isEnabled: request.isEnabled }, () => {
+      // Wyślij wiadomość do wszystkich aktywnych tabów
+      chrome.tabs.query({}, (tabs) => {
+        tabs.forEach((tab) => {
+          if (tab.id) {
+            chrome.tabs
+              .sendMessage(tab.id, {
+                action: "extensionStateChanged",
+                isEnabled: request.isEnabled,
+              })
+              .catch(() => {
+                // Ignoruj błędy dla tabów, które nie mają content script
+              });
+          }
+        });
       });
+    });
+    return true;
+  }
+
+  if (request.action === "processPageContent") {
+    // Sprawdź, czy wtyczka jest włączona
+    chrome.storage.local.get(["isEnabled"], async (result) => {
+      const isEnabled =
+        result.isEnabled !== undefined ? result.isEnabled : true;
+
+      if (!isEnabled) {
+        console.log("Wtyczka jest wyłączona - pomijam analizę strony");
+        sendResponse({ status: "Wtyczka wyłączona" });
+        return;
+      }
+
+      const pageData: PageData = request.data;
+      console.log("Przetwarzanie danych strony:", {
+        title: pageData.title,
+        contentLength: pageData.content.length,
+        keywords: pageData.keywords,
+      });
+
+      // Pobierz sugestie od OpenAI
+      getSuggestions(pageData.keywords, pageData.content)
+        .then((suggestions: Suggestion[]) => {
+          if (suggestions.length > 0) {
+            // Zapisz pierwszą sugestię
+            saveSuggestion(suggestions[0]);
+            sendResponse({ suggestion: suggestions[0] });
+          } else {
+            sendResponse({ status: "Brak sugestii" });
+          }
+        })
+        .catch((error: any) => {
+          console.error("Błąd podczas pobierania sugestii:", error);
+          sendResponse({ status: "Błąd podczas pobierania sugestii" });
+        });
+    });
 
     return true; // Wymagane dla asynchronicznego sendResponse
   }

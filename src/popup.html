@@ -53,10 +53,76 @@
         color: #666;
         font-style: italic;
       }
+      .toggle-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 15px;
+        padding: 10px;
+        background: #f5f5f5;
+        border-radius: 6px;
+      }
+      .toggle-label {
+        font-size: 14px;
+        font-weight: 500;
+      }
+      .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 24px;
+      }
+      .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+      .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: 0.4s;
+        border-radius: 24px;
+      }
+      .toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 16px;
+        width: 16px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: 0.4s;
+        border-radius: 50%;
+      }
+      input:checked + .toggle-slider {
+        background-color: #4a90e2;
+      }
+      input:checked + .toggle-slider:before {
+        transform: translateX(26px);
+      }
+      .date-right {
+        text-align: right;
+        font-size: 12px;
+        color: #666;
+        font-style: italic;
+        margin-top: 2px;
+      }
     </style>
   </head>
   <body>
     <h1>MindWander</h1>
+    <div class="toggle-container">
+      <span class="toggle-label">Włącz wtyczkę</span>
+      <label class="toggle-switch">
+        <input type="checkbox" id="extension-toggle" checked />
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
     <p class="description">
       Wtyczka analizuje przeglądane strony i sugeruje interesujące, powiązane
       treści, które mogą poszerzyć Twoje horyzonty.
