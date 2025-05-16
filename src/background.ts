@@ -57,7 +57,7 @@ async function canShowSuggestionForDomain(domain: string): Promise<boolean> {
 
     if (!lastTimestamp) return true;
 
-    const twelveHoursInMs = 10 * 60 * 1000;
+    const twelveHoursInMs = 90 * 60 * 1000; // 1.5 godziny
     return Date.now() - lastTimestamp > twelveHoursInMs;
   } catch (error) {
     console.error("Błąd podczas sprawdzania timestampu domeny:", error);

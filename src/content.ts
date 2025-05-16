@@ -6,7 +6,7 @@ console.log(
 );
 
 // Minimalny czas (w milisekundach) między analizami tej samej strony
-const MIN_ANALYSIS_INTERVAL = 15 * 60 * 1000; // 15 minut
+const MIN_ANALYSIS_INTERVAL = 90 * 60 * 1000; // 1.5 godziny
 
 // Ostatni czas analizy dla aktualnej strony
 let lastAnalysisTime = 0;
