@@ -1,97 +1,117 @@
 # MindWander
 
-## Opis projektu
-
-MindWander to rozszerzenie do przeglądarki, które pomaga użytkownikom odkrywać nowe, inspirujące treści wykraczające poza ich zwykłe zainteresowania. W przeciwieństwie do tradycyjnych algorytmów rekomendacji, które pogłębiają bańki informacyjne, MindWander celowo proponuje nieoczywiste, zaskakujące połączenia między tematami, zachęcając do intelektualnej eksploracji i serendipity.
+Rozszerzenie do przeglądarki (Chrome, Brave, Edge), które analizuje przeglądaną stronę i proponuje nieoczywiste, inspirujące treści powiązane z tym, co właśnie czytasz — zamiast pogłębiać bańkę informacyjną.
 
 ## Funkcje
 
-- **Analiza zawartości strony** - automatyczne rozpoznawanie głównej treści przeglądanej strony
-- **Kreatywne wyszukiwanie** - wykorzystanie AI do generowania nieoczywistych zapytań inspirowanych aktualnie przeglądaną treścią
-- **Odkrywanie nowych połączeń** - wyświetlanie inspirujących sugestii z różnych dziedzin (nauka, sztuka, filozofia, itp.)
-- **Nieinwazyjny interfejs** - delikatne powiadomienia i elegancki popup, który nie zakłóca normalnego przeglądania
+- **Analiza zawartości strony** — rozpoznawanie głównej treści i słów kluczowych
+- **Kreatywne wyszukiwanie** — OpenAI generuje nieoczywiste zapytanie na podstawie kontekstu
+- **Wyniki z sieci** — [Brave Search API](https://brave.com/search/api/) dostarcza strony do wyboru
+- **Sugestia serendipity** — AI wybiera jeden wynik i opisuje zaskakujące powiązanie z Twoją stroną
+- **Nieinwazyjny UI** — popup w prawym dolnym rogu, powiadomienia, przełącznik w popupie rozszerzenia
 
 ## Technologie
 
-- TypeScript
-- Chrome Extensions API
-- OpenRouter API (dostęp do zaawansowanych modeli AI)
-- Google Custom Search API
+- TypeScript, Chrome Extensions API (Manifest V3)
+- [OpenAI API](https://platform.openai.com/) (`gpt-4o-mini` domyślnie)
+- [Brave Search API](https://brave.com/search/api/) zamiast Google Custom Search JSON API
+
+> **Dlaczego Brave, a nie Google?**  
+> Google Custom Search JSON API nie jest już dostępne dla nowych projektów (deprecacja, migracja do 2027). Konsola GCP może nadal pokazywać API jako „włączone”, ale zapytania zwracają 403. Brave ma darmowy tier (~2000 zapytań/miesiąc) i prostszą konfigurację (sam klucz API).
+
+## Wymagania
+
+- Node.js i npm
+- Przeglądarka Chromium (Chrome, Brave, Edge)
+- Klucz [OpenAI](https://platform.openai.com/api-keys)
+- Klucz [Brave Search](https://brave.com/search/api/)
 
 ## Instalacja
 
-### Wymagania
+### 1. Repozytorium i zależności
 
-- Node.js i npm
-- Przeglądarka oparta na Chromium (Chrome, Edge, itp.)
-
-### Kroki instalacji
-
-1. Sklonuj repozytorium:
-
-```
+```bash
 git clone https://github.com/PiotrSobiecki/MindWander.git
 cd MindWander
-```
-
-2. Zainstaluj zależności:
-
-```
 npm install
 ```
 
-3. Stwórz plik konfiguracyjny:
+### 2. Konfiguracja
 
-```
+```bash
 cp src/config.ts_example.ts src/config.ts
 ```
 
-4. Edytuj `src/config.ts` i dodaj swoje klucze API:
+Edytuj `src/config.ts`:
 
-   - Klucz OpenRouter API lub OPENAI
-   - Klucz Google Custom Search API
-   - Klucz Google CX
+| Zmienna | Skąd wziąć |
+|---------|------------|
+| `OPENAI_API_KEY` | [platform.openai.com/api-keys](https://platform.openai.com/api-keys) |
+| `BRAVE_API_KEY` | [brave.com/search/api](https://brave.com/search/api/) → dashboard → API key |
 
-5. Zbuduj rozszerzenie:
+`OPENAI_API_URL`, `BRAVE_API_URL` i `MODEL_AI` zostaw jak w przykładzie, chyba że chcesz inny model OpenAI.
 
-```
+Plik `src/config.ts` jest w `.gitignore` — **nie commituj kluczy**.
+
+### 3. Build
+
+```bash
 npm run build
 ```
 
-6. Zainstaluj rozszerzenie w Chrome:
-   - Otwórz `chrome://extensions/`
-   - Włącz "Tryb dewelopera"
-   - Kliknij "Wczytaj rozpakowane"
-   - Wybierz folder `dist` z tego repozytorium
+### 4. Weryfikacja API (opcjonalnie)
+
+```bash
+npm run test:apis
+```
+
+Powinny przejść: OpenAI (chat), Brave Search, pełny pipeline `getSuggestions`.
+
+### 5. Załaduj wtyczkę
+
+- Chrome: `chrome://extensions/`
+- Brave: `brave://extensions/`
+
+Włącz **Tryb dewelopera** → **Wczytaj rozpakowane** → wybierz folder **`dist`** (nie `src`).
 
 ## Użytkowanie
 
-Po zainstalowaniu, MindWander działa w tle podczas przeglądania stron internetowych. Będzie analizować zawartość stron, a następnie prezentować inspirujące sugestie w formie dyskretnego popup'u w prawym dolnym rogu.
+MindWander działa w tle na stronach z treścią. Po załadowaniu strony (zwykle po **10–30 s**) może pojawić się sugestia w prawym dolnym rogu. Ikona rozszerzenia otwiera popup z ostatnimi sugestiami i przełącznikiem włącz/wyłącz.
 
-Każda sugestia zawiera:
+Każda sugestia zawiera tytuł, opis powiązania i link do źródła.
 
-- Tytuł
-- Krótki opis wyjaśniający nieoczywisty związek z przeglądaną treścią
-- Link do źródła, które można otworzyć w nowej karcie
+**Uwaga:** na tej samej domenie sugestie są ograniczone częstotliwością (ok. 90 min między analizami) — do testów użyj nowej strony lub domeny.
 
 ## Rozwój
 
-Aby pracować nad rozszerzeniem w trybie deweloperskim:
-
-```
-npm run dev
+```bash
+npm run watch
 ```
 
-To uruchomi budowanie w trybie watch, automatycznie rekompilując kod po każdej zmianie.
+Po zmianach w TypeScript uruchom ponownie `npm run copy-files` lub pełne `npm run build`.
+
+```bash
+npm run validate   # sprawdza dist/ (manifest, importy, host_permissions)
+npm run test:apis  # testy OpenAI + Brave
+```
+
+## Skrypty npm
+
+| Skrypt | Opis |
+|--------|------|
+| `npm run build` | ikony + kompilacja TS + kopiowanie manifestu i HTML |
+| `npm run watch` | kompilacja TS w trybie watch |
+| `npm run test:apis` | test kluczy API |
+| `npm run validate` | walidacja zbudowanej wtyczki w `dist/` |
 
 ## Licencja
 
-Ten projekt jest udostępniany na licencji MIT. Zobacz plik LICENSE, aby uzyskać więcej informacji.
+MIT — zobacz plik LICENSE.
 
-## Autorzy
+## Autor
 
-Piotr Sobiecki - twórca projektu
+Piotr Sobiecki
 
-## Źródła inspiracji
+## Inspiracja
 
-Projekt inspirowany koncepcją serendipity - odkrywania wartościowych rzeczy, których się nie szukało - oraz chęcią przełamania baniek filtrujących, które ograniczają naszą ekspozycję na różnorodne treści w internecie.
+Koncepcja **serendipity** — wartościowe odkrycia, których się nie szukało — oraz przełamywanie baniek filtrujących w internecie.

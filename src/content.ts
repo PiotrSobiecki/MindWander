@@ -20,6 +20,9 @@ let currentPageSuggestions: {
   category?: string;
 }[] = [];
 
+// Flaga blokująca wielokrotne wywołanie sugestii na jednej stronie
+let suggestionShown = false;
+
 // Funkcja do pobierania głównej treści strony
 function getPageContent(): {
   title: string;
@@ -243,6 +246,9 @@ function showSuggestionsNavigator(
 
 // Funkcja do analizy strony z opóźnieniem
 function analyzePageWithDelay() {
+  if (suggestionShown) {
+    return;
+  }
   const currentTime = Date.now();
   const timeSinceLastAnalysis = currentTime - lastAnalysisTime;
 
@@ -281,6 +287,7 @@ function analyzePageWithDelay() {
           // Zapisz sugestię dla bieżącej strony
           currentPageSuggestions = [response.suggestion];
           showSuggestion();
+          suggestionShown = true;
         }
       }
     );
@@ -293,15 +300,6 @@ if (document.readyState === "complete") {
 } else {
   window.addEventListener("load", analyzePageWithDelay);
 }
-
-// Rozpocznij analizę po scrollowaniu
-let scrollTimeout: number | null = null;
-window.addEventListener("scroll", () => {
-  if (scrollTimeout) {
-    clearTimeout(scrollTimeout);
-  }
-  scrollTimeout = window.setTimeout(analyzePageWithDelay, 1000);
-});
 
 async function urlExists(url: string): Promise<boolean> {
   try {

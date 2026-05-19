@@ -1,24 +1,21 @@
 // Plik konfiguracyjny MindWander
-// Skopiuj ten plik do config.ts i uzupełnij swoimi kluczami API
+// Skopiuj: cp src/config.ts_example.ts src/config.ts
 
-// Klucz API z OpenRouter lub OpenAI
+// OpenAI — https://platform.openai.com/api-keys
 const OPENAI_API_KEY = "TWÓJ_KLUCZ_OPENAI_API";
-const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions"; // dla OPENAI
+const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
 
-// Klucz API Google Custom Search i ID wyszukiwarki
-const GOOGLE_API_KEY = "TWÓJ_KLUCZ_GOOGLE_API"; // custom search API key
-const GOOGLE_CX = "TWÓJ_ID_GOOGLE_CUSTOM_SEARCH"; // https://programmablesearchengine.google.com/controlpanel/all
-const GOOGLE_API_URL = "https://www.googleapis.com/customsearch/v1";
+// Brave Search — https://brave.com/search/api/
+const BRAVE_API_KEY = "TWÓJ_KLUCZ_BRAVE_SEARCH";
+const BRAVE_API_URL = "https://api.search.brave.com/res/v1/web/search";
 
-// Model AI - wybierz jeden z dostępnych na OpenRouter
-// Zalecane: "anthropic/claude-instant-1" (darmowy) lub "qwen/qwen3-235b-a22b" (najlepszy)
-const MODEL_AI = "anthropic/claude-instant-1";
+// Modele OpenAI: gpt-4o-mini (domyślny), gpt-4o, gpt-3.5-turbo
+const MODEL_AI = "gpt-4o-mini";
 
 export {
   OPENAI_API_KEY,
   OPENAI_API_URL,
-  GOOGLE_API_KEY,
-  GOOGLE_CX,
-  GOOGLE_API_URL,
+  BRAVE_API_KEY,
+  BRAVE_API_URL,
   MODEL_AI,
 };

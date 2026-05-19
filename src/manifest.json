@@ -3,11 +3,10 @@
   "name": "MindWander",
   "version": "1.0",
   "description": "Wtyczka do odkrywania nieoczywistych, ale tematycznie powiązanych treści",
-  "permissions": ["storage", "notifications", "activeTab"],
+  "permissions": ["storage", "notifications"],
   "host_permissions": [
-    "https://export.arxiv.org/*",
-    "https://api.github.com/*",
-    "https://api.europeana.eu/*"
+    "https://api.openai.com/*",
+    "https://api.search.brave.com/*"
   ],
   "background": {
     "service_worker": "background.js",

@@ -4,6 +4,8 @@
   "description": "Wtyczka Chrome do odkrywania nieoczywistych treści.",
   "scripts": {
     "build": "npm run generate-icons && tsc -p tsconfig.json && npm run copy-files",
+    "validate": "node scripts/validate-extension.js",
+    "test:apis": "node scripts/test-apis.js",
     "watch": "tsc -p tsconfig.json --watch",
     "copy-files": "copyfiles -u 1 src/manifest.json src/popup.html src/icons/* dist/",
     "generate-icons": "node scripts/generate-icons.js"

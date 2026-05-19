@@ -4,6 +4,6 @@ Rozszerzenie MindWander nie gromadzi, nie przechowuje ani nie udostępnia żadny
 
 Użytkownik może w każdej chwili usunąć historię sugestii i ustawienia lokalnie zapisane w przeglądarce.
 
-Wszelkie zapytania do zewnętrznych API (OpenRouter, Google Custom Search) są wykonywane wyłącznie w celu realizacji funkcji rozszerzenia i nie zawierają danych umożliwiających identyfikację użytkownika.
+Wszelkie zapytania do zewnętrznych API (OpenAI, Brave Search) są wykonywane wyłącznie w celu realizacji funkcji rozszerzenia. Przesyłane są fragmenty treści i słowa kluczowe z analizowanej strony — bez danych umożliwiających bezpośrednią identyfikację użytkownika.
 
 W przypadku pytań dotyczących prywatności, prosimy o kontakt poprzez stronę GitHub projektu.
