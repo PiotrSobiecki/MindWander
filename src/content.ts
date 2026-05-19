@@ -100,11 +100,9 @@ function removeUnwantedElements(element: HTMLElement) {
   });
 }
 
-// Funkcja do pobierania słów kluczowych
 function getKeywords(): string[] {
   const keywords: string[] = [];
 
-  // Pobierz słowa kluczowe z meta tagów
   const metaKeywords = document.querySelector('meta[name="keywords"]');
   if (metaKeywords) {
     const content = metaKeywords.getAttribute("content");
@@ -113,20 +111,11 @@ function getKeywords(): string[] {
     }
   }
 
-  // Pobierz słowa kluczowe z meta description
-  const metaDescription = document.querySelector('meta[name="description"]');
-  if (metaDescription) {
-    const content = metaDescription.getAttribute("content");
-    if (content) {
-      keywords.push(...content.split(" ").map((k) => k.trim()));
-    }
+  if (document.title) {
+    keywords.push(document.title);
   }
 
-  // Dodaj tytuł strony jako słowo kluczowe
-  keywords.push(document.title);
-
-  // Usuń duplikaty i puste wartości
-  return [...new Set(keywords)].filter((k) => k.length > 0);
+  return [...new Set(keywords)].filter((k) => k.length > 1);
 }
 
 // Funkcja do wyświetlania popupu z możliwością przewijania sugestii
