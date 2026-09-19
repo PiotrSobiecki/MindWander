@@ -84,14 +84,21 @@ for (const jsFile of jsFiles) {
     } catch {}
   }
 }
-// Also check template literals with API URLs from config
+// Endpointy trzymane w stałych konfiguracyjnych (config.js) też liczą się
+// jako używane. Skanujemy wyłącznie literały tekstowe po zdjęciu komentarzy —
+// inaczej linki dokumentacyjne z komentarzy wyglądają jak wywołania API
+// i walidator żąda host_permissions, których nikt nie potrzebuje.
+function stripComments(src) {
+  return src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^[ \t]*\/\/.*$/gm, "");
+}
+
 for (const jsFile of jsFiles) {
-  const content = fs.readFileSync(jsFile, "utf8");
-  const urlConstRegex = /https:\/\/[a-z0-9.-]+\/[a-z0-9./_-]*/gi;
+  const content = stripComments(fs.readFileSync(jsFile, "utf8"));
+  const stringUrlRegex = /["'`](https:\/\/[a-z0-9.-]+\/[^"'`\s]*)["'`]/gi;
   let match;
-  while ((match = urlConstRegex.exec(content)) !== null) {
+  while ((match = stringUrlRegex.exec(content)) !== null) {
     try {
-      usedHosts.add(new URL(match[0]).origin + "/*");
+      usedHosts.add(new URL(match[1]).origin + "/*");
     } catch {}
   }
 }

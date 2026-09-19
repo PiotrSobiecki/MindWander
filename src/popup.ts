@@ -1,11 +1,18 @@
 // src/popup.ts
 
+import {
+  createDisclosureBadge,
+  markAiGenerated,
+} from "./aiDisclosure.js";
+import { clear, el, safeHttpUrl } from "./safeDom.js";
+
 // Interfejs dla sugestii
 interface Suggestion {
   title: string;
   url: string;
   description: string;
   timestamp?: number;
+  model?: string;
 }
 
 // Funkcja do formatowania daty
@@ -25,30 +32,50 @@ function renderSuggestions(suggestions: Suggestion[]) {
   const suggestionsList = document.getElementById("suggestions-list");
   if (!suggestionsList) return;
 
+  clear(suggestionsList);
+
   if (suggestions.length === 0) {
-    suggestionsList.innerHTML =
-      '<p class="status">Brak ostatnich sugestii.</p>';
+    suggestionsList.appendChild(
+      el(document, "p", {
+        text: "Brak ostatnich sugestii.",
+        attrs: { class: "status" },
+      })
+    );
     return;
   }
 
-  suggestionsList.innerHTML = suggestions
-    .map(
-      (suggestion) => `
-    <div class="suggestion">
-      <h3>${suggestion.title}</h3>
-      <p>${suggestion.description}</p>
-      <a href="${suggestion.url}" target="_blank">Przeczytaj więcej →</a>
-      ${
-        suggestion.timestamp
-          ? `<div class="date-right">${formatDate(suggestion.timestamp)}</div>`
-          : ""
-      }
-    </div>
-  `
-    )
-    .join("");
-}
+  for (const suggestion of suggestions) {
+    // Tytuł, opis i URL pochodzą z wyników wyszukiwania — nigdy przez innerHTML.
+    const card = el(document, "div", { attrs: { class: "suggestion" } });
 
+    // Znacznik odczytywalny maszynowo — art. 50 ust. 2 AI Act.
+    markAiGenerated(card, suggestion.model ?? "nieznany");
+
+    card.appendChild(el(document, "h3", { text: suggestion.title }));
+    card.appendChild(createDisclosureBadge(document));
+    card.appendChild(el(document, "p", { text: suggestion.description }));
+
+    const href = safeHttpUrl(suggestion.url);
+    if (href) {
+      const link = el(document, "a", { text: "Przeczytaj więcej →" });
+      link.href = href;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      card.appendChild(link);
+    }
+
+    if (suggestion.timestamp) {
+      card.appendChild(
+        el(document, "div", {
+          text: formatDate(suggestion.timestamp),
+          attrs: { class: "date-right" },
+        })
+      );
+    }
+
+    suggestionsList.appendChild(card);
+  }
+}
 // Funkcja do aktualizacji stanu przełącznika
 function updateToggleState(isEnabled: boolean) {
   const toggle = document.getElementById(

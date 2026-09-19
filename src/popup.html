@@ -105,6 +105,24 @@
       input:checked + .toggle-slider:before {
         transform: translateX(26px);
       }
+      /* Ujawnienie AI (art. 50 AI Act) — ma być widoczne, nie schowane. */
+      .ai-notice {
+        font-size: 12px;
+        line-height: 1.5;
+        color: #92400e;
+        background: #fef3c7;
+        border-left: 3px solid #f59e0b;
+        padding: 8px 10px;
+        border-radius: 4px;
+        margin-bottom: 15px;
+      }
+      [data-ai-generated] {
+        font-size: 11px;
+        color: #6b7280;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        margin-bottom: 4px;
+      }
       .date-right {
         text-align: right;
         font-size: 12px;
@@ -127,6 +145,12 @@
       Wtyczka analizuje przeglądane strony i sugeruje interesujące, powiązane
       treści, które mogą poszerzyć Twoje horyzonty.
     </p>
+    <!-- Art. 50 ust. 5 AI Act: ujawnienie pada przy pierwszej ekspozycji,
+         nie dopiero w polityce prywatności. -->
+    <div class="ai-notice">
+      Sugestie generuje model językowy (OpenAI). Mogą być niedokładne —
+      potraktuj je jako punkt wyjścia, nie jako źródło.
+    </div>
     <div class="suggestions">
       <h2 style="font-size: 16px; margin: 0 0 10px 0">Ostatnie sugestie</h2>
       <div id="suggestions-list">

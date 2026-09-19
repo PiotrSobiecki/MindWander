@@ -91,8 +91,9 @@ npm run watch
 Po zmianach w TypeScript uruchom ponownie `npm run copy-files` lub pełne `npm run build`.
 
 ```bash
+npm test           # ujawnienie AI (art. 50) + brak innerHTML w renderze
 npm run validate   # sprawdza dist/ (manifest, importy, host_permissions)
-npm run test:apis  # testy OpenAI + Brave
+npm run test:apis  # testy OpenAI + Brave (wymaga prawdziwych kluczy)
 ```
 
 ## Skrypty npm

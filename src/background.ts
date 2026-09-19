@@ -1,6 +1,7 @@
 // src/background.ts
 
 import { getSuggestions } from "./services/suggestionService.js";
+import { withDisclosure } from "./aiDisclosure.js";
 
 // Interfejs dla danych strony
 interface PageData {
@@ -16,11 +17,15 @@ interface Suggestion {
   description: string;
   source: string;
   category: string;
+  model: string;
   timestamp?: number;
 }
 
 // Maksymalna liczba przechowywanych sugestii
 const MAX_SUGGESTIONS = 5;
+
+// Ile czekamy przed kolejną sugestią dla tej samej domeny.
+const DOMAIN_COOLDOWN_MS = 90 * 60 * 1000;
 
 // Funkcja do wyświetlania powiadomienia
 async function showSuggestionNotification(suggestion: Suggestion) {
@@ -29,7 +34,9 @@ async function showSuggestionNotification(suggestion: Suggestion) {
       type: "basic",
       iconUrl: "icons/icon128.png",
       title: "MindWander - Nowa sugestia",
-      message: `${suggestion.title}\n\n${suggestion.description}`,
+      // Powiadomienie systemowe to czysty tekst, więc ujawnienie z art. 50
+      // wchodzi w treść wiadomości — nie ma go gdzie pokazać inaczej.
+      message: withDisclosure(`${suggestion.title}\n\n${suggestion.description}`),
       buttons: [{ title: "Otwórz" }],
       priority: 2,
     });
@@ -57,8 +64,7 @@ async function canShowSuggestionForDomain(domain: string): Promise<boolean> {
 
     if (!lastTimestamp) return true;
 
-    const twelveHoursInMs = 90 * 60 * 1000; // 1.5 godziny
-    return Date.now() - lastTimestamp > twelveHoursInMs;
+    return Date.now() - lastTimestamp > DOMAIN_COOLDOWN_MS;
   } catch (error) {
     console.error("Błąd podczas sprawdzania timestampu domeny:", error);
     return true;
@@ -92,7 +98,7 @@ async function saveSuggestion(suggestion: Suggestion) {
       console.log(
         "Sugestia dla domeny",
         domain,
-        "była już pokazana w ciągu ostatnich 12 godzin"
+        `była już pokazana w ciągu ostatnich ${DOMAIN_COOLDOWN_MS / 60000} minut`
       );
       return;
     }

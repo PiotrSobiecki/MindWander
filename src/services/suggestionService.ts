@@ -14,6 +14,9 @@ interface Suggestion {
   description: string;
   source: string;
   category: string;
+  // Który model wygenerował opis — trafia do znacznika maszynowego
+  // wymaganego przez art. 50 ust. 2 AI Act.
+  model: string;
 }
 
 interface Extraction {
@@ -260,6 +263,7 @@ Zwróć WYŁĄCZNIE JSON.`;
     description: String(s.description),
     source: "Internet",
     category: String(s.category || targetDomain),
+    model: MODEL_AI,
   };
 }
 

@@ -1,5 +1,11 @@
 // src/content.ts
 
+import {
+  createDisclosureBadge,
+  markAiGenerated,
+} from "./aiDisclosure.js";
+import { clear, el, safeHttpUrl } from "./safeDom.js";
+
 console.log(
   "MindWander - Content script załadowany na stronie:",
   window.location.href
@@ -12,13 +18,16 @@ const MIN_ANALYSIS_INTERVAL = 90 * 60 * 1000; // 1.5 godziny
 let lastAnalysisTime = 0;
 
 // Przechowywanie sugestii dla bieżącej strony
-let currentPageSuggestions: {
+type PageSuggestion = {
   title: string;
   url: string;
   description: string;
   source?: string;
   category?: string;
-}[] = [];
+  model?: string;
+};
+
+let currentPageSuggestions: PageSuggestion[] = [];
 
 // Flaga blokująca wielokrotne wywołanie sugestii na jednej stronie
 let suggestionShown = false;
@@ -120,7 +129,7 @@ function getKeywords(): string[] {
 
 // Funkcja do wyświetlania popupu z możliwością przewijania sugestii
 function showSuggestionsNavigator(
-  suggestions: { title: string; url: string; description: string }[],
+  suggestions: PageSuggestion[],
   startIndex = 0
 ) {
   console.log(
@@ -133,95 +142,123 @@ function showSuggestionsNavigator(
 
   let currentIndex = startIndex;
 
-  let suggestionElement = document.getElementById("serendipity-suggestion");
-  if (!suggestionElement) {
-    suggestionElement = document.createElement("div");
-    suggestionElement.id = "serendipity-suggestion";
-    suggestionElement.style.cssText = `
-      position: fixed;
-      bottom: 32px;
-      right: 32px;
-      background: #fff;
-      color: #222;
-      padding: 24px 28px 24px 24px;
-      border-radius: 12px;
-      box-shadow: 0 2px 16px rgba(0,0,0,0.18);
-      max-width: 420px;
-      z-index: 10000;
-      font-family: 'Segoe UI', Arial, sans-serif;
-      border: 1px solid #e0e0e0;
-      transition: opacity 0.5s;
-      opacity: 1;
-      line-height: 1.7;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    `;
-    document.body.appendChild(suggestionElement);
-  }
+  // Wczesny return wyżej gwarantuje, że elementu jeszcze nie ma.
+  const suggestionElement = document.createElement("div");
+  suggestionElement.id = "serendipity-suggestion";
+  suggestionElement.style.cssText = `
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+    background: #fff;
+    color: #222;
+    padding: 24px 28px 24px 24px;
+    border-radius: 12px;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.18);
+    max-width: 420px;
+    z-index: 10000;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    border: 1px solid #e0e0e0;
+    transition: opacity 0.5s;
+    opacity: 1;
+    line-height: 1.7;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  `;
+  document.body.appendChild(suggestionElement);
 
   function render() {
     const suggestion = suggestions[currentIndex];
-    suggestionElement!.innerHTML = `
-      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-        <span style="font-size: 18px; font-weight: 700; color: #2563eb;">${
-          suggestion.title
-        }</span>
-        <button id="serendipity-close" title="Zamknij" style="background: none; border: none; color: #2563eb; cursor: pointer; font-size: 22px; line-height: 1; margin-left: 12px;">×</button>
-      </div>
-      <p style="margin: 0 0 12px 0; font-size: 15px; color: #222;">${
-        suggestion.description
-      }</p>
-      <a href="${
-        suggestion.url
-      }" target="_blank" style="color: #2563eb; text-decoration: underline; font-size: 15px; word-break: break-all;">Przeczytaj więcej →</a>
-      ${
-        suggestions.length > 1
-          ? `
-      <div style="display: flex; justify-content: center; gap: 10px; margin-top: 8px;">
-        <button id="serendipity-prev" style="display: ${
-          currentIndex > 0 ? "inline-block" : "none"
-        }; padding: 4px 12px; font-size: 18px; border-radius: 6px; border: 1px solid #e0e0e0; background: #f5f5f5; cursor: pointer;">←</button>
-        <button id="serendipity-next" style="display: ${
-          currentIndex < suggestions.length - 1 ? "inline-block" : "none"
-        }; padding: 4px 12px; font-size: 18px; border-radius: 6px; border: 1px solid #e0e0e0; background: #f5f5f5; cursor: pointer;">→</button>
-      </div>
-      <div style='text-align:center; font-size:12px; color:#888; margin-top:2px;'>${
-        currentIndex + 1
-      } / ${suggestions.length}</div>
-      `
-          : ""
-      }
-    `;
-    // Obsługa zamykania
-    const closeBtn = document.getElementById("serendipity-close");
-    if (closeBtn) {
-      closeBtn.onclick = (event) => {
-        event.stopPropagation();
-        event.preventDefault();
-        suggestionElement!.remove();
-      };
-      closeBtn.style.pointerEvents = "auto";
-    }
-    suggestionElement!.style.pointerEvents = "auto";
+    const host = suggestionElement;
+    clear(host);
 
-    // Obsługa nawigacji tylko gdy mamy więcej niż jedną sugestię
+    // Znacznik odczytywalny maszynowo — art. 50 ust. 2 AI Act.
+    markAiGenerated(host, suggestion.model ?? "nieznany");
+
+    const header = el(document, "div", {
+      style:
+        "display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;",
+    });
+    header.appendChild(
+      el(document, "span", {
+        text: suggestion.title,
+        style: "font-size:18px; font-weight:700; color:#2563eb;",
+      })
+    );
+    const closeBtn = el(document, "button", {
+      text: "×",
+      id: "serendipity-close",
+      title: "Zamknij",
+      style:
+        "background:none; border:none; color:#2563eb; cursor:pointer; font-size:22px; line-height:1; margin-left:12px;",
+    });
+    header.appendChild(closeBtn);
+    host.appendChild(header);
+
+    // Ujawnienie pada nad treścią, nie pod nią.
+    host.appendChild(createDisclosureBadge(document));
+
+    host.appendChild(
+      el(document, "p", {
+        text: suggestion.description,
+        style: "margin:0 0 12px 0; font-size:15px; color:#222;",
+      })
+    );
+
+    // javascript: i data: nie mają tu wstępu.
+    const href = safeHttpUrl(suggestion.url);
+    if (href) {
+      const link = el(document, "a", {
+        text: "Przeczytaj więcej →",
+        style:
+          "color:#2563eb; text-decoration:underline; font-size:15px; word-break:break-all;",
+      });
+      link.href = href;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      host.appendChild(link);
+    }
+
     if (suggestions.length > 1) {
-      const prevBtn = document.getElementById("serendipity-prev");
-      if (prevBtn)
-        prevBtn.onclick = () => {
+      const nav = el(document, "div", {
+        style: "display:flex; justify-content:center; gap:10px; margin-top:8px;",
+      });
+      const btnStyle =
+        "padding:4px 12px; font-size:18px; border-radius:6px; border:1px solid #e0e0e0; background:#f5f5f5; cursor:pointer;";
+      if (currentIndex > 0) {
+        const prev = el(document, "button", { text: "←", style: btnStyle });
+        prev.onclick = () => {
           currentIndex--;
           render();
         };
-      const nextBtn = document.getElementById("serendipity-next");
-      if (nextBtn)
-        nextBtn.onclick = () => {
+        nav.appendChild(prev);
+      }
+      if (currentIndex < suggestions.length - 1) {
+        const next = el(document, "button", { text: "→", style: btnStyle });
+        next.onclick = () => {
           currentIndex++;
           render();
         };
+        nav.appendChild(next);
+      }
+      host.appendChild(nav);
+      host.appendChild(
+        el(document, "div", {
+          text: `${currentIndex + 1} / ${suggestions.length}`,
+          style:
+            "text-align:center; font-size:12px; color:#888; margin-top:2px;",
+        })
+      );
     }
-  }
 
+    closeBtn.onclick = (event) => {
+      event.stopPropagation();
+      event.preventDefault();
+      host.remove();
+    };
+    closeBtn.style.pointerEvents = "auto";
+    host.style.pointerEvents = "auto";
+  }
   render();
 
   // Automatycznie znikaj po 10 minutach (600 000 ms)
@@ -290,15 +327,6 @@ if (document.readyState === "complete") {
   window.addEventListener("load", analyzePageWithDelay);
 }
 
-async function urlExists(url: string): Promise<boolean> {
-  try {
-    const response = await fetch(url, { method: "HEAD", mode: "no-cors" });
-    // Jeśli nie ma błędu, uznajemy, że istnieje (niestety no-cors nie daje statusu, ale nie rzuca błędu dla istniejących)
-    return response.ok || response.type === "opaque";
-  } catch {
-    return false;
-  }
-}
 
 // Zmieniona funkcja wyświetlania sugestii - używa sugestii z bieżącej strony
 function showSuggestion() {
