@@ -36,43 +36,37 @@ cd MindWander
 npm install
 ```
 
-### 2. Konfiguracja
-
-```bash
-cp src/config.ts_example.ts src/config.ts
-```
-
-Edytuj `src/config.ts`:
-
-| Zmienna | Skąd wziąć |
-|---------|------------|
-| `OPENAI_API_KEY` | [platform.openai.com/api-keys](https://platform.openai.com/api-keys) |
-| `BRAVE_API_KEY` | [brave.com/search/api](https://brave.com/search/api/) → dashboard → API key |
-
-`OPENAI_API_URL`, `BRAVE_API_URL` i `MODEL_AI` zostaw jak w przykładzie, chyba że chcesz inny model OpenAI.
-
-Plik `src/config.ts` jest w `.gitignore` — **nie commituj kluczy**.
-
-### 3. Build
+### 2. Build
 
 ```bash
 npm run build
 ```
 
-### 4. Weryfikacja API (opcjonalnie)
-
-```bash
-npm run test:apis
-```
-
-Powinny przejść: OpenAI (chat), Brave Search, pełny pipeline `getSuggestions`.
-
-### 5. Załaduj wtyczkę
+### 3. Załaduj wtyczkę
 
 - Chrome: `chrome://extensions/`
 - Brave: `brave://extensions/`
 
 Włącz **Tryb dewelopera** → **Wczytaj rozpakowane** → wybierz folder **`dist`** (nie `src`).
+
+### 4. Klucze API
+
+Klucze nie są częścią kodu. Otwórz opcje rozszerzenia (ikona wtyczki → *Klucze API i model*) i wklej tam swoje:
+
+| Klucz | Skąd wziąć |
+|-------|------------|
+| OpenAI | [platform.openai.com/api-keys](https://platform.openai.com/api-keys) |
+| Brave Search | [brave.com/search/api](https://brave.com/search/api/) → dashboard → API key |
+
+Klucze trafiają do `chrome.storage.local` w profilu tej przeglądarki. Nigdzie ich nie commitujesz i nie ma ich w zbudowanej paczce — skompilowane rozszerzenie leży na dysku w postaci jawnej, więc klucz wpisany do źródeł byłby kluczem opublikowanym. Do czasu wpisania kluczy wtyczka nie wykona żadnego zapytania i powie o tym w popupie.
+
+### 5. Weryfikacja API (opcjonalnie)
+
+```bash
+OPENAI_API_KEY=... BRAVE_API_KEY=... npm run smoke:apis
+```
+
+Skrypt czyta klucze ze zmiennych środowiskowych i sprawdza, czy oba API odpowiadają.
 
 ## Użytkowanie
 
@@ -82,28 +76,34 @@ Każda sugestia zawiera tytuł, opis powiązania i link do źródła.
 
 **Uwaga:** na tej samej domenie sugestie są ograniczone częstotliwością (ok. 90 min między analizami) — do testów użyj nowej strony lub domeny.
 
+### Czego wtyczka nie czyta
+
+Bankowość, poczta, strony administracji, adresy w sieci lokalnej i każda strona z widocznym polem hasła są pomijane — treść stamtąd nie trafia do OpenAI. Najostrzejsze przypadki wyklucza `exclude_matches` w manifeście (content script w ogóle się nie wstrzykuje), resztę `src/pageGuard.ts`.
+
 ## Rozwój
 
 ```bash
-npm run watch
+npm run watch      # tsc --noEmit w trybie watch
+npm run build      # typecheck + bundle + manifest, HTML i ikony do dist/
 ```
 
-Po zmianach w TypeScript uruchom ponownie `npm run copy-files` lub pełne `npm run build`.
+Content script i strony rozszerzenia ładują się jako klasyczne skrypty, więc `tsc` sam nie wystarcza — `npm run bundle` składa je esbuildem do samodzielnych plików IIFE. Service worker zostaje modułem ESM, bo tak deklaruje go manifest.
 
 ```bash
-npm test           # ujawnienie AI (art. 50) + brak innerHTML w renderze
-npm run validate   # sprawdza dist/ (manifest, importy, host_permissions)
-npm run test:apis  # testy OpenAI + Brave (wymaga prawdziwych kluczy)
+npm test             # ujawnienie AI (art. 50), brak innerHTML, format bundli
+npm run validate     # sprawdza dist/ (manifest, host_permissions)
+npm run smoke:apis   # zapytanie do OpenAI i Brave (klucze z env)
 ```
 
 ## Skrypty npm
 
 | Skrypt | Opis |
 |--------|------|
-| `npm run build` | ikony + kompilacja TS + kopiowanie manifestu i HTML |
-| `npm run watch` | kompilacja TS w trybie watch |
-| `npm run test:apis` | test kluczy API |
+| `npm run build` | typecheck + bundle + manifest, HTML i ikony do dist/ |
+| `npm run typecheck` | sam TypeScript, bez emisji |
+| `npm run bundle` | esbuild: content/popup/options jako IIFE, background jako ESM |
 | `npm run validate` | walidacja zbudowanej wtyczki w `dist/` |
+| `npm run smoke:apis` | test kluczy API ze zmiennych środowiskowych |
 
 ## Licencja
 

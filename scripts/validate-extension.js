@@ -31,6 +31,7 @@ const required = [
   manifest.background?.service_worker,
   ...(manifest.content_scripts?.flatMap((cs) => cs.js) || []),
   manifest.action?.default_popup,
+  manifest.options_ui?.page,
   manifest.action?.default_icon?.["16"],
   manifest.action?.default_icon?.["48"],
   manifest.action?.default_icon?.["128"],
@@ -49,26 +50,16 @@ if (!popupHtml.includes('src="popup.js"')) {
   errors.push("popup.html nie odwołuje się do popup.js");
 }
 
-// 4. ES module imports resolve (background + services)
-const jsFiles = readJsFiles(distDir).filter(
-  (f) => !f.endsWith("config.ts_example.js")
-);
-const importRegex = /from\s+["'](\.\.?\/[^"']+)["']/g;
+// 4. Każdy plik wtyczki jest samodzielnym bundlem — importy między plikami
+// w dist nie mają prawa wystąpić. Że content.js i popup.js ładują się jako
+// klasyczne skrypty, pilnuje scripts/test-bundles.js.
+const jsFiles = readJsFiles(distDir);
 for (const jsFile of jsFiles) {
   const content = fs.readFileSync(jsFile, "utf8");
-  let match;
-  while ((match = importRegex.exec(content)) !== null) {
-    const importPath = match[1];
-    const base = path.dirname(jsFile);
-    const candidates = [
-      path.join(base, importPath),
-      path.join(base, importPath + ".js"),
-    ];
-    if (!candidates.some((c) => fs.existsSync(c))) {
-      errors.push(
-        `Nierozwiązywalny import "${importPath}" w ${path.relative(distDir, jsFile)}`
-      );
-    }
+  if (/^\s*import\s.+from\s+["']\.\.?\//m.test(content)) {
+    errors.push(
+      `${path.relative(distDir, jsFile)} importuje inny plik — bundle powinien być samodzielny`
+    );
   }
 }
 

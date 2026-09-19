@@ -5,11 +5,21 @@ Aby zbudować sugestię, rozszerzenie wysyła fragment treści przeglądanej str
 oraz słowa kluczowe do OpenAI i Brave Search. Poza tymi dostawcami dane nie
 trafiają nigdzie indziej.
 
-Historia sugestii i ustawienia są trzymane wyłącznie w Twojej przeglądarce
-(`chrome.storage.local`). Możesz je w każdej chwili usunąć w ustawieniach
-rozszerzenia albo odinstalowując je.
+Historia sugestii, ustawienia i Twoje klucze API są trzymane wyłącznie
+w Twojej przeglądarce (`chrome.storage.local`). Możesz je w każdej chwili
+usunąć w opcjach rozszerzenia albo odinstalowując je.
+
+## Strony pomijane
+
+Rozszerzenie nie czyta treści stron bankowości, poczty, administracji
+publicznej, adresów w sieci lokalnej ani żadnej strony z widocznym polem
+hasła. Z takich stron nic nie jest wysyłane do OpenAI ani Brave Search.
 
 ## Odbiorcy i transfer poza EOG
+
+Zapytania idą bezpośrednio z Twojej przeglądarki do dostawców, na Twoim
+własnym kluczu API. Autor rozszerzenia nie prowadzi serwera pośredniczącego
+i nie widzi ruchu.
 
 - **OpenAI** (USA) — fragment treści strony i słowa kluczowe, w celu
   wygenerowania sugestii.

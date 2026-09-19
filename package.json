@@ -1,20 +1,24 @@
 {
   "name": "silnik-serendipity",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Wtyczka Chrome do odkrywania nieoczywistych treści.",
   "scripts": {
-    "build": "npm run generate-icons && tsc -p tsconfig.json && npm run copy-files",
-    "validate": "node scripts/validate-extension.js",
-    "test:apis": "node scripts/test-apis.js",
-    "watch": "tsc -p tsconfig.json --watch",
-    "copy-files": "copyfiles -u 1 src/manifest.json src/popup.html src/icons/* dist/",
+    "build": "npm run typecheck && npm run bundle && npm run copy-files && npm run generate-icons",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "bundle": "node scripts/bundle.js",
+    "copy-files": "copyfiles -u 1 src/manifest.json src/popup.html src/options.html dist/",
     "generate-icons": "node scripts/generate-icons.js",
-    "test": "node --test scripts/test-ai-disclosure.js"
+    "validate": "node scripts/validate-extension.js",
+    "pretest": "npm run build",
+    "test": "node --test",
+    "smoke:apis": "node scripts/smoke-apis.js",
+    "watch": "tsc --noEmit -p tsconfig.json --watch"
   },
   "devDependencies": {
     "@types/chrome": "^0.3.0",
     "@types/node": "^26.6.2",
     "copyfiles": "^2.4.1",
+    "esbuild": "^0.28.2",
     "sharp": "^0.35.4",
     "typescript": "^7.0.2"
   }

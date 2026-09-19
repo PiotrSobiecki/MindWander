@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "MindWander",
-  "version": "1.0",
+  "version": "0.2.0",
   "description": "Wtyczka do odkrywania nieoczywistych, ale tematycznie powiązanych treści",
   "permissions": ["storage", "notifications"],
   "host_permissions": [
@@ -14,10 +14,34 @@
   },
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
+      "matches": ["http://*/*", "https://*/*"],
+      "exclude_matches": [
+        "*://*.mbank.pl/*",
+        "*://*.ipko.pl/*",
+        "*://*.pkobp.pl/*",
+        "*://*.santander.pl/*",
+        "*://*.bankmillennium.pl/*",
+        "*://*.pekao.com.pl/*",
+        "*://*.aliorbank.pl/*",
+        "*://*.ing.pl/*",
+        "*://*.revolut.com/*",
+        "*://*.paypal.com/*",
+        "*://mail.google.com/*",
+        "*://accounts.google.com/*",
+        "*://outlook.live.com/*",
+        "*://outlook.office.com/*",
+        "*://*.gov.pl/*",
+        "*://*.zus.pl/*",
+        "*://localhost/*",
+        "*://127.0.0.1/*"
+      ],
       "js": ["content.js"]
     }
   ],
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
   "action": {
     "default_popup": "popup.html",
     "default_icon": {

@@ -5,6 +5,7 @@ import {
   markAiGenerated,
 } from "./aiDisclosure.js";
 import { clear, el, safeHttpUrl } from "./safeDom.js";
+import { hasKeys } from "./settings.js";
 import { readLocal } from "./storage.js";
 
 // Interfejs dla sugestii
@@ -98,8 +99,24 @@ async function getExtensionState(): Promise<boolean> {
   return readLocal<boolean>("isEnabled", true);
 }
 
+/** Bez kluczy wtyczka nic nie zrobi — mówimy to zamiast milczeć. */
+async function renderKeyState() {
+  const banner = document.getElementById("keys-missing");
+  if (!banner) return;
+  banner.hidden = await hasKeys();
+}
+
 // Inicjalizacja popup
 document.addEventListener("DOMContentLoaded", async () => {
+  await renderKeyState();
+
+  for (const id of ["open-options", "open-options-inline"]) {
+    document.getElementById(id)?.addEventListener("click", (e) => {
+      e.preventDefault();
+      chrome.runtime.openOptionsPage();
+    });
+  }
+
   // Pobierz i wyświetl sugestie
   const suggestions = await readLocal<Suggestion[]>("recentSuggestions", []);
   renderSuggestions(suggestions);

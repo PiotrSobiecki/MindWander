@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <title>MindWander — ustawienia</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        max-width: 640px;
+        margin: 0 auto;
+        padding: 32px 24px;
+        color: #333;
+        line-height: 1.6;
+      }
+      h1 {
+        font-size: 22px;
+        margin: 0 0 8px 0;
+        color: #4a90e2;
+      }
+      .intro {
+        font-size: 14px;
+        color: #555;
+        margin-bottom: 24px;
+      }
+      .field {
+        margin-bottom: 24px;
+      }
+      label {
+        display: block;
+        font-weight: 600;
+        font-size: 14px;
+        margin-bottom: 4px;
+      }
+      .hint {
+        font-size: 12px;
+        color: #666;
+        margin-bottom: 6px;
+      }
+      .hint a {
+        color: #4a90e2;
+      }
+      input[type="password"],
+      select {
+        width: 100%;
+        padding: 8px 10px;
+        font-size: 14px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        box-sizing: border-box;
+        font-family: inherit;
+      }
+      .state {
+        font-size: 12px;
+        margin-top: 4px;
+      }
+      .state.saved {
+        color: #15803d;
+      }
+      .state.empty {
+        color: #b45309;
+      }
+      .row {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        margin-top: 24px;
+      }
+      button {
+        padding: 9px 18px;
+        font-size: 14px;
+        font-family: inherit;
+        border-radius: 6px;
+        border: 1px solid #4a90e2;
+        background: #4a90e2;
+        color: #fff;
+        cursor: pointer;
+      }
+      button.secondary {
+        background: #fff;
+        color: #b91c1c;
+        border-color: #e5e7eb;
+      }
+      #status {
+        font-size: 13px;
+        margin-left: 6px;
+      }
+      .note {
+        margin-top: 32px;
+        padding: 12px 14px;
+        background: #f8fafc;
+        border-left: 3px solid #cbd5e1;
+        font-size: 13px;
+        color: #475569;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>MindWander — ustawienia</h1>
+    <p class="intro">
+      Wtyczka używa Twoich własnych kluczy API. Klucze zostają w profilu tej
+      przeglądarki i nie są nigdzie wysyłane poza OpenAI i Brave Search.
+    </p>
+
+    <div class="field">
+      <label for="openai-key">Klucz OpenAI</label>
+      <p class="hint">
+        Do wygenerowania na
+        <a href="https://platform.openai.com/api-keys" target="_blank"
+          rel="noopener noreferrer">platform.openai.com/api-keys</a>.
+      </p>
+      <input
+        type="password"
+        id="openai-key"
+        autocomplete="off"
+        spellcheck="false"
+        placeholder="wklej klucz, aby ustawić lub zmienić"
+      />
+      <div class="state" id="openai-state"></div>
+    </div>
+
+    <div class="field">
+      <label for="brave-key">Klucz Brave Search</label>
+      <p class="hint">
+        Do wygenerowania na
+        <a href="https://brave.com/search/api/" target="_blank"
+          rel="noopener noreferrer">brave.com/search/api</a>.
+      </p>
+      <input
+        type="password"
+        id="brave-key"
+        autocomplete="off"
+        spellcheck="false"
+        placeholder="wklej klucz, aby ustawić lub zmienić"
+      />
+      <div class="state" id="brave-state"></div>
+    </div>
+
+    <div class="field">
+      <label for="model">Model</label>
+      <p class="hint">Tańszy model wystarcza do tego zadania.</p>
+      <select id="model"></select>
+    </div>
+
+    <div class="row">
+      <button id="save">Zapisz</button>
+      <button id="clear" class="secondary">Usuń klucze</button>
+      <span id="status"></span>
+    </div>
+
+    <p class="note">
+      Puste pole przy zapisie zostawia poprzednią wartość bez zmian. Zapisany
+      klucz nie jest tu pokazywany — widać tylko, czy istnieje.
+    </p>
+
+    <script src="options.js"></script>
+  </body>
+</html>

@@ -26,14 +26,13 @@ jobs:
 
       - run: npm ci
 
-      # config.ts jest w .gitignore. Do kompilacji wystarczą placeholdery
-      # z przykładu — żadnych prawdziwych kluczy w CI.
-      - run: cp src/config.ts_example.ts src/config.ts
-
+      # Klucze API mieszkają w chrome.storage, nie w źródłach — build nie
+      # potrzebuje żadnych sekretów.
       - run: npm run build
 
-      # Pilnuje ujawnienia AI (art. 50 AI Act) i tego, że dane z wyszukiwarki
-      # nie wracają do innerHTML. Nie wyłączaj.
+      # Pilnuje ujawnienia AI (art. 50 AI Act), tego, że dane z wyszukiwarki
+      # nie wracają do innerHTML, i tego, że content.js oraz popup.js ładują
+      # się jako klasyczne skrypty. Nie wyłączaj.
       - run: npm test
 
       - run: npm run validate

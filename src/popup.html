@@ -130,6 +130,29 @@
         font-style: italic;
         margin-top: 2px;
       }
+      .keys-missing {
+        font-size: 12px;
+        line-height: 1.5;
+        color: #7f1d1d;
+        background: #fee2e2;
+        border-left: 3px solid #dc2626;
+        padding: 8px 10px;
+        border-radius: 4px;
+        margin-bottom: 15px;
+      }
+      .footer {
+        margin-top: 15px;
+        padding-top: 10px;
+        border-top: 1px solid #eee;
+        font-size: 12px;
+      }
+      .footer a {
+        color: #4a90e2;
+        text-decoration: none;
+      }
+      .footer a:hover {
+        text-decoration: underline;
+      }
     </style>
   </head>
   <body>
@@ -151,12 +174,19 @@
       Sugestie generuje model językowy (OpenAI). Mogą być niedokładne —
       potraktuj je jako punkt wyjścia, nie jako źródło.
     </div>
+    <div class="keys-missing" id="keys-missing" hidden>
+      Brak kluczy API. Wtyczka nie wykona żadnego zapytania, dopóki nie
+      wkleisz własnego klucza OpenAI i Brave Search w
+      <a href="#" id="open-options-inline">opcjach</a>.
+    </div>
     <div class="suggestions">
       <h2 style="font-size: 16px; margin: 0 0 10px 0">Ostatnie sugestie</h2>
       <div id="suggestions-list">
         <!-- Sugestie będą dodawane dynamicznie przez JavaScript -->
       </div>
-      <p class="status">Sugestie pojawią się podczas przeglądania stron.</p>
+    </div>
+    <div class="footer">
+      <a href="#" id="open-options">Klucze API i model</a>
     </div>
     <script src="popup.js"></script>
   </body>

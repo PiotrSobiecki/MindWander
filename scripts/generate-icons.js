@@ -2,8 +2,12 @@ const sharp = require("sharp");
 const fs = require("fs");
 const path = require("path");
 
+// Ikony powstają w całości z SVG poniżej — nie ma pliku źródłowego, z którego
+// by je wycinano. Trzymanie ich w src/ oznaczało artefakty budowania w gicie
+// i brudne drzewo po każdym `npm run build`, bo sharp za każdym razem wypluwa
+// nieco inne bajty. Idą prosto do dist/, razem z resztą paczki.
 const sizes = [16, 48, 128];
-const outputDir = path.join(__dirname, "../src/icons");
+const outputDir = path.join(__dirname, "../dist/icons");
 
 // Upewnij się, że katalog istnieje
 if (!fs.existsSync(outputDir)) {

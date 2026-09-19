@@ -12,9 +12,16 @@ const { test } = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
+const { buildHelpers } = require("./build-helpers.js");
 
 const root = path.join(__dirname, "..");
 const read = (p) => fs.readFileSync(path.join(root, p), "utf8");
+
+let helpers;
+const loadHelpers = async () => {
+  if (!helpers) helpers = await import(await buildHelpers());
+  return helpers;
+};
 
 test("moduł ujawnienia definiuje niepustą treść i znacznik maszynowy", () => {
   const src = read("src/aiDisclosure.ts");
@@ -53,12 +60,64 @@ test("popup informuje o AI przy pierwszym otwarciu", () => {
 });
 
 test("safeHttpUrl przepuszcza tylko http i https", async () => {
-  const mod = await import(
-    require("node:url").pathToFileURL(path.join(root, "dist/safeDom.js")).href
+  const { safeHttpUrl } = await loadHelpers();
+  assert.equal(safeHttpUrl("https://example.com/a"), "https://example.com/a");
+  assert.equal(safeHttpUrl("http://example.com/"), "http://example.com/");
+  assert.equal(safeHttpUrl("javascript:alert(1)"), null);
+  assert.equal(safeHttpUrl("data:text/html,<script>x</script>"), null);
+  assert.equal(safeHttpUrl("nie-url"), null);
+});
+
+test("sugestia przyjmuje wyłącznie adres z wyników wyszukiwarki", async () => {
+  const { matchResult } = await loadHelpers();
+  const results = [
+    { title: "A", url: "https://example.org/tekst/", description: "" },
+    { title: "B", url: "https://inny.example/b", description: "" },
+  ];
+
+  // Model przepisał adres — z drobną różnicą w zapisie, którą tolerujemy.
+  assert.equal(
+    matchResult(results, "https://www.example.org/tekst")?.title,
+    "A"
   );
-  assert.equal(mod.safeHttpUrl("https://example.com/a"), "https://example.com/a");
-  assert.equal(mod.safeHttpUrl("http://example.com/"), "http://example.com/");
-  assert.equal(mod.safeHttpUrl("javascript:alert(1)"), null);
-  assert.equal(mod.safeHttpUrl("data:text/html,<script>x</script>"), null);
-  assert.equal(mod.safeHttpUrl("nie-url"), null);
+  // Model podstawił adres spoza listy: strona mogła go wstrzyknąć w treści.
+  assert.equal(matchResult(results, "https://phishing.example/a"), null);
+  assert.equal(matchResult(results, "javascript:alert(1)"), null);
+  assert.equal(matchResult(results, ""), null);
+});
+
+test("strony wrażliwe nie trafiają do analizy", async () => {
+  const { skipReason } = await loadHelpers();
+
+  assert.equal(skipReason("https://blog.example/artykul", false), null);
+
+  assert.ok(skipReason("https://www.mbank.pl/konto", false));
+  assert.ok(skipReason("https://mail.google.com/u/0", false));
+  assert.ok(skipReason("https://pacjent.gov.pl/wizyty", false));
+  assert.ok(skipReason("http://localhost:3000/", false));
+  assert.ok(skipReason("http://192.168.0.1/admin", false));
+  assert.ok(skipReason("file:///C:/dokumenty/notatka.html", false));
+  assert.ok(skipReason("chrome://extensions/", false));
+
+  // Strona spoza listy, ale z formularzem logowania.
+  assert.equal(
+    skipReason("https://forum.example/login", true),
+    "strona z formularzem logowania"
+  );
+});
+
+test("content script pyta o pole hasła przed wysłaniem treści", () => {
+  const src = read("src/content.ts");
+  assert.match(src, /input\[type="password"\]/, "brak sprawdzenia pola hasła");
+  assert.match(src, /skipReason\(/, "brak bramki pageGuard");
+});
+
+test("klucze API nie wracają do źródeł", () => {
+  const service = read("src/services/suggestionService.ts");
+  assert.doesNotMatch(
+    service,
+    /from "\.\.\/config\.js"/,
+    "serwis znów importuje config — klucze pojechałyby w paczce"
+  );
+  assert.match(service, /readSettings\(/, "klucze mają iść z chrome.storage");
 });
