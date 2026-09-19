@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 26
+          cache: npm
+
+      - run: npm ci
+
+      # config.ts jest w .gitignore. Do kompilacji wystarczą placeholdery
+      # z przykładu — żadnych prawdziwych kluczy w CI.
+      - run: cp src/config.ts_example.ts src/config.ts
+
+      - run: npm run build
+
+      # Pilnuje ujawnienia AI (art. 50 AI Act) i tego, że dane z wyszukiwarki
+      # nie wracają do innerHTML. Nie wyłączaj.
+      - run: npm test
+
+      - run: npm run validate
