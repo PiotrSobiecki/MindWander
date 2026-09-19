@@ -2,13 +2,14 @@
   "compilerOptions": {
     "target": "es2020",
     "module": "es2020",
+    "rootDir": "./src",
     "outDir": "./dist",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "lib": ["es2020", "dom"],
     "types": ["chrome"]
   },

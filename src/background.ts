@@ -2,6 +2,7 @@
 
 import { getSuggestions } from "./services/suggestionService.js";
 import { withDisclosure } from "./aiDisclosure.js";
+import { pickLocal, readLocal } from "./storage.js";
 
 // Interfejs dla danych strony
 interface PageData {
@@ -58,8 +59,10 @@ function getDomain(url: string): string {
 // Funkcja do sprawdzania, czy minęło 12 godzin od ostatniej sugestii dla domeny
 async function canShowSuggestionForDomain(domain: string): Promise<boolean> {
   try {
-    const result = await chrome.storage.local.get(["domainTimestamps"]);
-    const timestamps = result.domainTimestamps || {};
+    const timestamps = await readLocal<Record<string, number>>(
+      "domainTimestamps",
+      {}
+    );
     const lastTimestamp = timestamps[domain];
 
     if (!lastTimestamp) return true;
@@ -74,8 +77,10 @@ async function canShowSuggestionForDomain(domain: string): Promise<boolean> {
 // Funkcja do aktualizacji timestampu dla domeny
 async function updateDomainTimestamp(domain: string) {
   try {
-    const result = await chrome.storage.local.get(["domainTimestamps"]);
-    const timestamps = result.domainTimestamps || {};
+    const timestamps = await readLocal<Record<string, number>>(
+      "domainTimestamps",
+      {}
+    );
     timestamps[domain] = Date.now();
     await chrome.storage.local.set({ domainTimestamps: timestamps });
   } catch (error) {
@@ -104,8 +109,10 @@ async function saveSuggestion(suggestion: Suggestion) {
     }
 
     // Pobierz aktualne sugestie
-    const result = await chrome.storage.local.get(["recentSuggestions"]);
-    const recentSuggestions: Suggestion[] = result.recentSuggestions || [];
+    const recentSuggestions = await readLocal<Suggestion[]>(
+      "recentSuggestions",
+      []
+    );
 
     // Dodaj timestamp do nowej sugestii
     const newSuggestion = {
@@ -149,7 +156,11 @@ chrome.notifications.onButtonClicked.addListener(
     if (buttonIndex === 0) {
       // Przycisk "Otwórz"
       chrome.storage.local.get(["recentSuggestions"], (result) => {
-        const recentSuggestions = result.recentSuggestions || [];
+        const recentSuggestions = pickLocal<Suggestion[]>(
+          result,
+          "recentSuggestions",
+          []
+        );
         if (recentSuggestions.length > 0) {
           chrome.tabs.create({ url: recentSuggestions[0].url });
         }
@@ -187,8 +198,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "processPageContent") {
     // Sprawdź, czy wtyczka jest włączona
     chrome.storage.local.get(["isEnabled"], async (result) => {
-      const isEnabled =
-        result.isEnabled !== undefined ? result.isEnabled : true;
+      const isEnabled = pickLocal<boolean>(result, "isEnabled", true);
 
       if (!isEnabled) {
         console.log("Wtyczka jest wyłączona - pomijam analizę strony");

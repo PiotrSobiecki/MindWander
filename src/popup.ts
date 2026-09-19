@@ -5,6 +5,7 @@ import {
   markAiGenerated,
 } from "./aiDisclosure.js";
 import { clear, el, safeHttpUrl } from "./safeDom.js";
+import { readLocal } from "./storage.js";
 
 // Interfejs dla sugestii
 interface Suggestion {
@@ -93,15 +94,14 @@ async function saveExtensionState(isEnabled: boolean) {
 
 // Funkcja do pobierania stanu wtyczki
 async function getExtensionState(): Promise<boolean> {
-  const result = await chrome.storage.local.get(["isEnabled"]);
-  return result.isEnabled !== undefined ? result.isEnabled : true; // domyślnie włączona
+  // Domyślnie włączona.
+  return readLocal<boolean>("isEnabled", true);
 }
 
 // Inicjalizacja popup
 document.addEventListener("DOMContentLoaded", async () => {
   // Pobierz i wyświetl sugestie
-  const result = await chrome.storage.local.get(["recentSuggestions"]);
-  const suggestions: Suggestion[] = result.recentSuggestions || [];
+  const suggestions = await readLocal<Suggestion[]>("recentSuggestions", []);
   renderSuggestions(suggestions);
 
   // Inicjalizuj przełącznik
