@@ -13,7 +13,7 @@
   },
   "devDependencies": {
     "@types/chrome": "^0.0.260",
-    "@types/node": "^22.15.18",
+    "@types/node": "^26.6.1",
     "copyfiles": "^2.4.1",
     "sharp": "^0.35.4",
     "typescript": "^5.0.0"
