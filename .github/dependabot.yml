@@ -4,7 +4,7 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-      day: "thursday"
+      day: "friday"
       time: "07:00"
       timezone: "Europe/Warsaw"
     open-pull-requests-limit: 10
@@ -23,7 +23,7 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-      day: "thursday"
+      day: "friday"
       time: "07:00"
       timezone: "Europe/Warsaw"
     labels:
